@@ -31,40 +31,43 @@
 #import <UIKit/UIKit.h>
 
 @protocol BAGPagingScrollViewDataSource;
+@protocol BAGPagingScrollViewDelegate;
 
+@interface BAGPagingScrollView : UIView <UIScrollViewDelegate>
 
-@interface BAGPagingScrollView : UIView <UIScrollViewDelegate> {
-    
-    id<BAGPagingScrollViewDataSource> dataSource;	//data source delegate
-	
-	UIScrollView		*scrollView;		//internal scroll view
-	NSMutableDictionary	*viewBuffer;		//temporary view buffer
-	
-@private
-	NSInteger	pageIndex;	//current page index
-    
-    //Views Used
-	UIView* pageView[3];
-	UIPageControl* pageControl;
-}
-@property(nonatomic, assign) IBOutlet id<BAGPagingScrollViewDataSource> dataSource;
-
+@property (nonatomic, weak) IBOutlet id<BAGPagingScrollViewDataSource> dataSource;
+@property (nonatomic, weak) IBOutlet id<BAGPagingScrollViewDelegate> delegate;
+@property (nonatomic, readonly) NSUInteger currentPageIndex;
 
 //Usage
-- (void)goToPage:(int)page;
-- (void)nextPage;
-- (void)previousPage;
-- (void)clearBuffer;
+- (void)reloadData;
+- (void)goToPage:(NSUInteger)page;
+- (void)goToNextPage;
+- (void)goToPreviousPage;
 
 @end
+
+typedef enum {
+    BAGPagingDirectionUnspecified,
+    BAGPagingDirectionLeft,
+    BAGPagingDirectionRight
+} BAGPagingDirection;
 
 @protocol BAGPagingScrollViewDataSource <NSObject>
 
 @optional
-- (NSInteger)numberOfPagesForPagingScrollView:(BAGPagingScrollView*)aPageingScrollView;
+- (BOOL)shouldDisplayPageControlForPagingScrollView:(BAGPagingScrollView*)pagingScrollView;
+- (NSUInteger)numberOfPagesForPagingScrollView:(BAGPagingScrollView*)aPageingScrollView;
 
 @required
-- (UIView*)pagingScrollView:(BAGPagingScrollView*)pagingScrollView
-          viewForPageIndex:(int)index;
+- (UIView*)pagingScrollView:(BAGPagingScrollView*)pagingScrollView viewForPageIndex:(NSUInteger)index;
 
+@end
+
+@protocol BAGPagingScrollViewDelegate <NSObject>
+
+@optional
+- (void)pagingScrollViewDidDetectTap:(BAGPagingScrollView*)pagingScrollView;
+- (void)pagingScrollView:(BAGPagingScrollView*)pagingScrollView didShowPageAtIndex:(NSUInteger)index direction:(BAGPagingDirection)direction;
+- (void)pagingScrollView:(BAGPagingScrollView*)pagingScrollView didZoomPageAtIndex:(NSUInteger)index withRelativeOffset:(CGPoint)offset relativeCenter:(CGPoint)center atScale:(float)scale;
 @end
